@@ -1164,6 +1164,17 @@ function init() {
   applyExtendedPieces(extendedPieces);
   document.getElementById('training-panel').hidden = !trainingMode;
 
+  // Follow OS dark-mode changes dynamically when the user hasn't set
+  // an explicit preference (i.e. no saved 'dark' key in settings yet).
+  const darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
+  darkMQ.addEventListener('change', e => {
+    const s = JSON.parse(localStorage.getItem('bst-settings') || '{}');
+    if (typeof s.dark !== 'boolean') {
+      darkMode = e.matches;
+      applyDarkMode(darkMode);
+    }
+  });
+
   initBoardDOM();
   initRackDOM();
   startNewGame();
