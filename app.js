@@ -86,7 +86,7 @@ const PIECE_DEFS = [
 const N = 9;
 
 // ── Animation durations (ms) – keep in sync with styles.css ──
-const ANIM_SLOT_SHRINK = 220;    // matches slotShrink 0.22s
+const ANIM_SLOT_SHRINK = 200;    // matches slotShrink 0.2s
 const ANIM_CLEAR       = 380;    // matches clearFlash 0.38s
 const ANIM_CLEAR_STAGGER = 120;  // max ripple stagger offset
 
