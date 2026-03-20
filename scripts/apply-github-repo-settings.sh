@@ -111,7 +111,7 @@ gh api --method PUT -H "Accept: application/vnd.github+json" "repos/$repo/branch
   "required_pull_request_reviews": {
     "dismiss_stale_reviews": true,
     "require_code_owner_reviews": false,
-    "required_approving_review_count": 1,
+    "required_approving_review_count": 0,
     "require_last_push_approval": false
   },
   "restrictions": null,
