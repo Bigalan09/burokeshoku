@@ -170,7 +170,6 @@ let extendedPieces = false;
 let darkMode     = false;
 let colorSetting = 'orange';   // 'orange','blue','green','purple','red','teal','pink','random'
 let rackSize     = 3;          // number of pieces shown in the rack (1–3)
-let orderPressure = false;
 
 const COLOR_NAMES = ['orange','blue','green','purple','red','teal','pink'];
 
@@ -333,7 +332,7 @@ function applyColor(name) {
 function applyDarkMode(on) {
   document.documentElement.dataset.theme = on ? 'dark' : '';
   document.querySelector('meta[name="theme-color"]')
-    .setAttribute('content', on ? '#18120e' : '#f4ecdc');
+    .setAttribute('content', on ? '#1c1c1e' : '#f2f2f7');
 }
 
 function applyExtendedPieces(on) {
@@ -379,126 +378,6 @@ function cellEl(r, c) {
 function cellSize() {
   const el = document.getElementById('board');
   return el ? el.getBoundingClientRect().width / N : 40;
-}
-
-function countBlockedPieces() {
-  let blocked = 0;
-  for (let i = 0; i < rackSize; i++) {
-    if (used[i]) continue;
-    if (!canPlaceAnywhere(pieces[i])) blocked++;
-  }
-  return blocked;
-}
-
-function updateCoachState() {
-  const el = document.getElementById('coach-state');
-  if (!el) return;
-
-  document.body.dataset.coach = trainingMode ? 'on' : 'off';
-
-  if (!trainingMode) {
-    el.textContent = 'Coach off';
-    return;
-  }
-
-  if (hintActive) {
-    el.textContent = 'Hint live';
-    return;
-  }
-
-  const blocked = countBlockedPieces();
-  if (blocked >= 2) {
-    el.textContent = 'Space warning';
-    return;
-  }
-
-  if (combo >= 2) {
-    el.textContent = `Chain ${combo}x`;
-    return;
-  }
-
-  el.textContent = 'Coach on';
-}
-
-function updateRackNote() {
-  const el = document.getElementById('rack-note');
-  if (!el) return;
-
-  if (gameOver) {
-    el.textContent = 'Board locked. Reset and go again.';
-    return;
-  }
-
-  if (hintActive) {
-    el.textContent = 'Lead with the highlighted piece, then keep the lanes alive.';
-    return;
-  }
-
-  const blocked = countBlockedPieces();
-  if (blocked >= 2) {
-    el.textContent = 'Too many dead pieces. Clear space before you get pinned.';
-    return;
-  }
-
-  if (blocked === 1) {
-    el.textContent = 'One piece is dead weight. Do not waste the live ones.';
-    return;
-  }
-
-  if (orderPressure) {
-    el.textContent = 'Order matters this round. Take the clean opener first.';
-    return;
-  }
-
-  el.textContent = 'Pick the piece that leaves you an exit.';
-}
-
-function updateBoardNote(mode) {
-  const el = document.getElementById('board-note');
-  if (!el) return;
-
-  if (gameOver) {
-    el.textContent = 'Board locked. Reset and go again.';
-    return;
-  }
-
-  if (mode === 'valid') {
-    el.textContent = 'That fit is live. Drop cleanly and keep the board moving.';
-    return;
-  }
-
-  if (mode === 'invalid') {
-    el.textContent = 'No fit there. Shift until every block lands cleanly.';
-    return;
-  }
-
-  if (combo >= 2) {
-    el.textContent = 'You have momentum. Chase score only if the board stays open.';
-    return;
-  }
-
-  if (orderPressure) {
-    el.textContent = 'This set is tight. Keep the middle breathing and mind the order.';
-    return;
-  }
-
-  el.textContent = 'Pick the shape that keeps the middle breathing.';
-}
-
-function setDragState(active, valid) {
-  const boardWrap = document.getElementById('board-wrap');
-  if (!boardWrap) return;
-
-  document.body.classList.toggle('is-dragging', active);
-  boardWrap.classList.toggle('drag-valid', active && valid === true);
-  boardWrap.classList.toggle('drag-invalid', active && valid === false);
-
-  if (!active || valid == null) {
-    updateBoardNote();
-    return;
-  }
-
-  updateBoardNote(valid ? 'valid' : 'invalid');
 }
 
 // ── DOM – board ────────────────────────────────────────────
@@ -590,20 +469,20 @@ function updateRackPlayability() {
   for (let i = 0; i < rackSize; i++) {
     if (used[i]) continue;
     const slot = document.getElementById(`slot-${i}`);
-    if (slot) {
-      const playable = canPlaceAnywhere(pieces[i]);
-      slot.classList.toggle('unplayable', !playable);
-      slot.dataset.playable = playable ? 'yes' : 'no';
-    }
+    if (slot) slot.classList.toggle('unplayable', !canPlaceAnywhere(pieces[i]));
   }
-
-  updateRackNote();
-  updateCoachState();
 }
 
 // ── Drag & drop ────────────────────────────────────────────
 let drag = null;
 
+function setDragState(active, slotIdx) {
+  document.getElementById('app').classList.toggle('is-dragging', active);
+  if (slotIdx != null) {
+    const slot = document.getElementById(`slot-${slotIdx}`);
+    if (slot) slot.classList.toggle('dragging', active);
+  }
+}
 function attachDragListeners(slot, i) {
   slot.addEventListener('touchstart', e => {
     e.preventDefault();
@@ -641,7 +520,6 @@ function startDrag(cx, cy, slotIdx) {
   const slotEl = document.getElementById(`slot-${slotIdx}`);
   if (slotEl && slotEl.classList.contains('unplayable')) return;
   clearHint();
-  setDragState(true, null);
 
   const cells = pieces[slotIdx];
   const cs    = cellSize();
@@ -665,6 +543,7 @@ function startDrag(cx, cy, slotIdx) {
   document.body.appendChild(ghost);
 
   document.getElementById(`slot-${slotIdx}`).classList.add('dragging');
+  setDragState(true, slotIdx);
 
   drag = { slotIdx, cells, ghost, b, cs, snapR: -99, snapC: -99 };
   updateGhost(cx, cy);
@@ -708,13 +587,9 @@ function updatePreview(cx, cy) {
     const r = row + dr, c = col + dc;
     return r >= 0 && r < N && c >= 0 && c < N;
   });
-  if (!onBoard) {
-    setDragState(true, null);
-    return;
-  }
+  if (!onBoard) return;
 
   const valid = canPlace(cells, row, col);
-  setDragState(true, valid);
   for (const [dr, dc] of cells) {
     const r = row + dr, c = col + dc;
     if (r < 0 || r >= N || c < 0 || c >= N) continue;
@@ -738,11 +613,11 @@ function clearPreview() {
 function endDrag(cx, cy) {
   if (!drag) return;
   clearPreview();
-  setDragState(false, null);
 
   const { slotIdx, cells, ghost, snapR, snapC } = drag;
   ghost.remove();
   document.getElementById(`slot-${slotIdx}`).classList.remove('dragging');
+  setDragState(false, slotIdx);
   drag = null;
 
   if (canPlace(cells, snapR, snapC)) {
@@ -753,9 +628,9 @@ function endDrag(cx, cy) {
 function cancelDrag() {
   if (!drag) return;
   clearPreview();
-  setDragState(false, null);
   drag.ghost.remove();
   document.getElementById(`slot-${drag.slotIdx}`).classList.remove('dragging');
+  setDragState(false, drag.slotIdx);
   drag = null;
 }
 
@@ -807,8 +682,6 @@ function doPlace(slotIdx, row, col) {
 function afterPlace() {
   updateRackPlayability();
   updateTrainingPanel();
-  updateCoachState();
-  updateBoardNote();
   if (used.every(Boolean)) {
     // All pieces placed → new round
     setTimeout(newRound, 80);
@@ -976,7 +849,7 @@ function showNoMoreSpaceMsg(cb) {
   overlay.className = 'no-space-overlay';
   const span = document.createElement('span');
   span.className = 'no-space-text';
-  span.textContent = 'Board locked';
+  span.textContent = 'No more space!';
   overlay.appendChild(span);
   document.body.appendChild(overlay);
 
@@ -994,7 +867,7 @@ function showChooseCarefullyMsg() {
   const boardRect = document.getElementById('board-wrap').getBoundingClientRect();
   const msg = document.createElement('div');
   msg.className = 'choose-carefully-msg';
-  msg.textContent = 'Order matters';
+  msg.textContent = 'Choose carefully…';
   // Centre the pill vertically in the board
   msg.style.top = (boardRect.top + boardRect.height / 2) + 'px';
   document.body.appendChild(msg);
@@ -1005,19 +878,14 @@ function showChooseCarefullyMsg() {
 function newRound() {
   used    = Array(rackSize).fill(false);
   pieces  = smartPieces();
-  orderPressure = false;
   if (colorSetting === 'random') applyColor('random');
   renderRack();
   updateRackPlayability();
   if (isGameOver()) {
     setTimeout(triggerGameOver, 150);
-  } else if (rackSize > 1) {
-    orderPressure = orderMatters();
-    if (orderPressure) showChooseCarefullyMsg();
+  } else if (rackSize > 1 && orderMatters()) {
+    showChooseCarefullyMsg();
   }
-  updateRackNote();
-  updateCoachState();
-  updateBoardNote();
 }
 
 function startNewGame() {
@@ -1025,7 +893,6 @@ function startNewGame() {
   score    = 0;
   combo    = 0;
   gameOver = false;
-  orderPressure = false;
   used     = Array(rackSize).fill(false);
   pieces   = smartPieces();
 
@@ -1035,14 +902,11 @@ function startNewGame() {
   renderRack();
   updateRackPlayability();
   clearHint();
-  document.getElementById('move-eval').textContent = '';
-  document.getElementById('strategy-note').textContent = '';
   updateTrainingPanel();
-  updateCoachState();
-  updateRackNote();
-  updateBoardNote();
 
   hideOverlay('ov-gameover');
+  document.getElementById('move-eval').textContent = '';
+  document.getElementById('strategy-note').textContent = '';
 }
 
 // ── Score UI ───────────────────────────────────────────────
@@ -1118,10 +982,7 @@ function fragmentation(b) {
 }
 
 function updateTrainingPanel() {
-  if (!trainingMode) {
-    updateCoachState();
-    return;
-  }
+  if (!trainingMode) return;
 
   const holes  = countHoles();
   const lanes  = countOpenLanes();
@@ -1136,13 +997,26 @@ function updateTrainingPanel() {
   updateCoachState();
 }
 
+function updateCoachState() {
+  const el = document.getElementById('coach-state');
+  if (!el) return;
+  if (!trainingMode) { el.textContent = 'Coach off'; return; }
+  const holes = countHoles();
+  const lanes = countOpenLanes();
+  el.textContent = holes > 4 ? 'Coach: clear gaps' : lanes < 4 ? 'Coach: open lanes' : 'Coach: on';
+}
+
+function updateRackNote() {
+  // UI contract hook — reserved for future rack status messaging
+}
+
 function strategyNote(holes, lanes, centre) {
-  if (holes > 4)   return 'Too many sealed gaps. Play flatter and keep exits open.';
-  if (centre > 6)  return 'The centre is choking. Re-open it before you take width.';
-  if (lanes < 4)   return 'Open lanes are low. Prioritise a clean release.';
-  if (combo > 2)   return `Chain ${combo} is live. Push another clear only if the board stays safe.`;
-  if (holes === 0 && lanes >= 12) return 'Clean board. Build towards a double or triple clear.';
-  return 'Take the move that keeps the centre loose and the lanes open.';
+  if (holes > 4)   return '⚠️ Many isolated holes — avoid blocking empty cells.';
+  if (centre > 6)  return '⚠️ Centre is congested — try to clear those boxes soon.';
+  if (lanes < 4)   return '⚠️ Few open lanes — prioritise clearing rows/cols.';
+  if (combo > 2)   return `🔥 ${combo}× combo! Keep clearing to maximise score.`;
+  if (holes === 0 && lanes >= 12) return '✅ Clean board — build towards a multi-clear.';
+  return '💡 Look for placements that complete a full row, column or 3×3 box.';
 }
 
 // ── Training: hint ─────────────────────────────────────────
@@ -1253,9 +1127,6 @@ function showHint() {
   const suffix = sequence.length > 1 ? ` · Play slot ${first.slotIdx + 1} first.` : '';
   document.getElementById('move-eval').textContent = explainMove(first.cells, first.r, first.c) + suffix;
   hintActive = true;
-  updateCoachState();
-  updateRackNote();
-  updateBoardNote();
 }
 
 function clearHint() {
@@ -1266,9 +1137,6 @@ function clearHint() {
     document.getElementById('move-eval').textContent = '';
     hintActive = false;
   }
-  updateCoachState();
-  updateRackNote();
-  updateBoardNote();
 }
 
 // ── Move evaluation heuristics ─────────────────────────────
@@ -1320,17 +1188,17 @@ function explainMove(cells, row, col) {
   const hAfter  = countHoles(after);
   const newHoles = hAfter - hBefore;
 
-  if (clrs.total >= 3) return `Best move. Clears ${clrs.total} regions at once.`;
-  if (clrs.total === 2) return `Strong move. Clears ${clrs.total} regions together.`;
+  if (clrs.total >= 3) return `✅ Best move — clears ${clrs.total} regions at once!`;
+  if (clrs.total === 2) return `✅ Great — clears ${clrs.total} regions simultaneously.`;
   if (clrs.total === 1) {
-    if (newHoles > 1) return `Clears a region, but it creates ${newHoles} gaps.`;
-    return 'Clears a region and keeps the board moving.';
+    if (newHoles > 1) return `⚠️ Clears a region but creates ${newHoles} holes.`;
+    return '✅ Clears a region — good for score and space.';
   }
-  if (newHoles > 2)   return `Risky. It creates ${newHoles} isolated gaps.`;
-  if (newHoles > 0)   return `Creates ${newHoles} gap(s). Look for a cleaner line.`;
+  if (newHoles > 2)   return `⚠️ Risky — creates ${newHoles} isolated holes.`;
+  if (newHoles > 0)   return `⚠️ Creates ${newHoles} hole(s). Consider alternatives.`;
   if (countOpenLanes(after) >= countOpenLanes(board))
-    return 'Safe. It preserves open lanes for future pieces.';
-  return 'Neutral move. Fine if you need to stay flexible.';
+    return '✅ Safe — preserves open lanes for future pieces.';
+  return '💡 Neutral placement — no immediate clears or major penalties.';
 }
 
 // ── Animation helpers ──────────────────────────────────────
@@ -1362,16 +1230,12 @@ function showOverlay(id) {
   ov.classList.remove('show');
   void ov.offsetWidth; // reflow
   ov.classList.add('show');
-  document.body.classList.add('overlay-open');
 }
 
 function hideOverlay(id) {
   const ov = document.getElementById(id);
   ov.classList.remove('show');
   ov.hidden = true;
-  if (!document.querySelector('.overlay.show')) {
-    document.body.classList.remove('overlay-open');
-  }
 }
 
 // ── Settings / overlays ────────────────────────────────────
@@ -1411,11 +1275,6 @@ document.getElementById('btn-done').addEventListener('click', () => {
   if (rackSize !== prevRackSize) {
     initRackDOM();
     startNewGame();
-  } else {
-    updateTrainingPanel();
-    updateCoachState();
-    updateRackNote();
-    updateBoardNote();
   }
 });
 
