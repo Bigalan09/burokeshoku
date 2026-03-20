@@ -6,6 +6,7 @@ on:
     types: [completed]
 
 permissions:
+  actions: read
   pages: write
   id-token: write
 
@@ -15,33 +16,25 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Get artifact URL from prepare run
-        id: get-artifact
-        uses: actions/github-script@v7
+      - name: Download prepared preview site
+        uses: actions/download-artifact@v4
         with:
-          result-encoding: string
-          script: |
-            const runId = context.payload.workflow_run.id;
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: runId,
-            });
-            const artifact = artifacts.data.artifacts.find(a => a.name === 'github-pages');
-            if (!artifact) {
-              const names = artifacts.data.artifacts.map(a => a.name).join(', ') || '(none)';
-              throw new Error(`No 'github-pages' artifact found in run ${runId}. Available: ${names}`);
-            }
-            return artifact.archive_download_url;
+          name: pr-preview-site
+          path: _site
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          artifact_url: ${{ steps.get-artifact.outputs.result }}

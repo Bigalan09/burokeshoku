@@ -4,7 +4,8 @@
 
 **Pronunciation:** boo-roh-hah-meh · ブロハメ
 
-🎮 **[Play the latest version](https://bigalan09.github.io/burokeshoku/)**
+🎮 **[Play the latest version](https://bigalan09.github.io/Burohame/)**
+📦 **[Repository](https://github.com/Bigalan09/Burohame)**
 
 ---
 
@@ -27,6 +28,7 @@ chmod +x run_server.sh
 ## Deploy
 
 Pushes to `main` auto-deploy to GitHub Pages via `.github/workflows/deploy.yml`.
+Manual production deploys are available via `workflow_dispatch` in the same workflow.
 
 ## Tech
 

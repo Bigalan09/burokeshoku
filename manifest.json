@@ -1,8 +1,8 @@
 {
   "name": "Burohame",
   "short_name": "Burohame",
-  "description": "Block Sudoku Trainer",
-  "start_url": "/burokeshoku/",
+  "description": "Mobile-first Burohame training app",
+  "start_url": "/Burohame/",
   "display": "standalone",
   "background_color": "#f2f2f7",
   "theme_color": "#f2f2f7",

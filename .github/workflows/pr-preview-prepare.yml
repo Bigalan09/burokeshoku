@@ -40,7 +40,10 @@ jobs:
       - name: Remove git metadata from deployment content
         run: rm -rf _deploy/.git
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload preview site artifact
+        uses: actions/upload-artifact@v4
         with:
+          name: pr-preview-site
           path: _deploy
+          if-no-files-found: error
+          retention-days: 1
