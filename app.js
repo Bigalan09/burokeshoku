@@ -251,10 +251,10 @@ function randomPiece() {
 // ── Difficulty-weighted piece selection ────────────────────
 // As score grows, larger/harder pieces become progressively more likely.
 function weightedRandomPiece() {
-  // fill: 0 at score 0, 1 at score 200+
-  const fill = Math.min(1, score / 200);
+  // fill: 0 at score 0, 1 at score 200, reaches 1.5 at score 300
+  const fill = Math.min(1.5, score / 200);
   // Each piece gets a weight = 1 + fill × (cellCount - 1) × 0.5
-  // At fill=0 all weights are equal; at fill=1 a 5-cell piece is 3× a 1-cell piece.
+  // At fill=0 all weights are equal; at fill=1.5 a 5-cell piece is 4× as likely as a 1-cell piece.
   let totalWeight = 0;
   const weights = PIECE_DEFS.map(p => {
     const w = 1 + fill * (p.length - 1) * 0.5;
@@ -283,27 +283,110 @@ function canCauseClear(cells) {
   return false;
 }
 
-function smartPieces() {
-  const p = Array.from({ length: rackSize }, () => weightedRandomPiece());
-  // Fast path: check if any of the rack pieces can cause a clear
-  for (let i = 0; i < rackSize; i++) {
-    if (canCauseClear(p[i])) return p;
-  }
-  // Fallback: lazily find a few candidates and stop early
-  const candidates = [];
-  for (const pc of PIECE_DEFS) {
-    if (canCauseClear(pc)) {
-      candidates.push(pc);
-      if (candidates.length >= 5) break;
+// Board-agnostic version of canCauseClear (used for look-ahead on simulated boards)
+function canCauseClearOnBoard(cells, b) {
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      if (!canPlaceOnBoard(cells, r, c, b)) continue;
+      const tmp = b.map(row => [...row]);
+      for (const [dr, dc] of cells) tmp[r + dr][c + dc] = 1;
+      if (getClearsOnBoard(tmp).total > 0) return true;
     }
   }
-  if (candidates.length > 0) {
-    const slot = Math.floor(Math.random() * rackSize);
-    p[slot] = candidates[Math.floor(Math.random() * candidates.length)];
-    return p;
+  return false;
+}
+
+// Piece well-suited to an early game (sparse board, score < 200).
+// Prefers 3–4 cell pieces for meaningful scoring on an open board.
+function earlyPiece() {
+  const pool = PIECE_DEFS.filter(p => p.length >= 3 && p.length <= 4);
+  if (pool.length === 0) return weightedRandomPiece();
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// Verify the next `rounds` future rounds will still have clearing opportunities.
+// Modifies `p` in-place if needed to maintain strategic play.
+function ensureLookahead(p, rounds) {
+  // Look-ahead requires at least 2 pieces to simulate meaningful future states.
+  if (rackSize < 2) return;
+
+  // Simulate placing all current rack pieces at their first available position
+  let b = board.map(r => [...r]);
+  for (const pc of p) {
+    let placed = false;
+    outer: for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        if (!canPlaceOnBoard(pc, r, c, b)) continue;
+        for (const [dr, dc] of pc) b[r + dr][c + dc] = 1;
+        b = applyClears(b, getClearsOnBoard(b));
+        placed = true;
+        break outer;
+      }
+    }
+    if (!placed) return; // simulation failed, skip look-ahead
   }
-  // No clear is possible at all – ensure at least one piece fits so the
-  // player can keep scoring before the game genuinely ends.
+
+  // Check that future rounds still offer clearing opportunities
+  for (let round = 0; round < rounds; round++) {
+    const futureHasClear = PIECE_DEFS.some(pc => canCauseClearOnBoard(pc, b));
+    if (!futureHasClear) {
+      // Future board is too dense — inject a clear-enabling piece into current rack
+      // canCauseClear(pc) implies canPlaceAnywhere(pc), so no separate placement check needed
+      const clearNow = PIECE_DEFS.find(pc => canCauseClear(pc));
+      if (clearNow) {
+        const swapIdx = p.findIndex(pc => !canCauseClear(pc));
+        if (swapIdx >= 0) p[swapIdx] = clearNow;
+      }
+      return;
+    }
+
+    // Advance simulation by one round of typical future pieces
+    const futurePieces = Array.from({ length: rackSize }, () => weightedRandomPiece());
+    for (const pc of futurePieces) {
+      let placed = false;
+      outer: for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          if (!canPlaceOnBoard(pc, r, c, b)) continue;
+          for (const [dr, dc] of pc) b[r + dr][c + dc] = 1;
+          b = applyClears(b, getClearsOnBoard(b));
+          placed = true;
+          break outer;
+        }
+      }
+      if (!placed) return; // board too full, stop simulation
+    }
+  }
+}
+
+function smartPieces() {
+  const filled = board.reduce((s, r) => s + r.reduce((t, c) => t + c, 0), 0);
+  const density = filled / (N * N);
+  const earlyGame = density < 0.10 && score < 200;
+
+  // Generate candidate rack based on difficulty
+  const p = Array.from({ length: rackSize }, () =>
+    earlyGame ? earlyPiece() : weightedRandomPiece()
+  );
+
+  // Guarantee at least one clearing opportunity in this rack
+  if (!p.some(pc => canCauseClear(pc))) {
+    const candidates = [];
+    for (const pc of PIECE_DEFS) {
+      if (canCauseClear(pc)) {
+        candidates.push(pc);
+        if (candidates.length >= 8) break; // 8 candidates give good random variety
+      }
+    }
+    if (candidates.length > 0) {
+      const slot = Math.floor(Math.random() * rackSize);
+      p[slot] = candidates[Math.floor(Math.random() * candidates.length)];
+    }
+  }
+
+  // Light 2-round look-ahead: keep the game strategic and clearable
+  ensureLookahead(p, 2);
+
+  // Final safety: ensure at least one piece can be placed
   if (!p.some(pc => canPlaceAnywhere(pc))) {
     outerLoop: for (let i = 0; i < rackSize; i++) {
       for (const pc of PIECE_DEFS) {
@@ -311,6 +394,7 @@ function smartPieces() {
       }
     }
   }
+
   return p;
 }
 
@@ -456,6 +540,13 @@ function renderSlot(i) {
   }, { once: true });
 
   slot.appendChild(inner);
+
+  // Slot number label — helps players match hint text ("play slot 2 first") to the rack
+  const label = document.createElement('span');
+  label.className = 'slot-label';
+  label.textContent = String(i + 1);
+  slot.appendChild(label);
+
   attachDragListeners(slot, i);
 }
 
@@ -715,7 +806,7 @@ function doClears() {
   // Scoring: cells cleared + multi-clear bonus + combo
   let pts = cleared.size;
   if (total > 1) pts += (total - 1) * 10;
-  combo++;
+  combo += total;   // combo grows by every region cleared in this move
   pts += combo * 5;
   score += pts;
 
