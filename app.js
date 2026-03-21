@@ -178,10 +178,20 @@ let darkMode     = false;
 let colorSetting = 'orange';   // 'orange','blue','green','purple','red','teal','pink','random'
 let rackSize     = 3;          // number of pieces shown in the rack (1–3)
 let progressionState = null;
+let coinToastOffset = 0;
 
 const COLOR_NAMES = ['orange','blue','green','purple','red','teal','pink'];
 const PROGRESSION_STORAGE_KEY = 'bst-progression';
 const PROGRESSION_STATE_VERSION = 1;
+const COIN_REWARDS = Object.freeze({
+  clearRegion: 4,
+  multiClearBonus: 3,
+  comboStep: 2,
+  roundCompletion: 2,
+  endRunBase: 10,
+  endRunPer50Score: 1,
+  personalBestBonus: 15,
+});
 
 function clampWholeNumber(value, fallback) {
   return Number.isInteger(value) && value >= 0 ? value : fallback;
@@ -296,6 +306,71 @@ function updateProgressionState(updater) {
 function resetProgressionState() {
   progressionState = createDefaultProgressionState();
   saveProgressionState();
+}
+
+function getCoinBalance() {
+  return progressionState?.coins?.balance || 0;
+}
+
+function updateCoinUI() {
+  const coinEl = document.getElementById('coin-balance');
+  if (!coinEl) return;
+  coinEl.textContent = getCoinBalance();
+}
+
+function awardCoins(amount, reason, options = {}) {
+  const wholeAmount = Math.max(0, Math.floor(amount));
+  if (!wholeAmount) return 0;
+
+  updateProgressionState(state => {
+    state.coins.balance += wholeAmount;
+    state.coins.lifetimeEarned += wholeAmount;
+    return state;
+  });
+
+  updateCoinUI();
+  if (!options.silent) showCoinToast(wholeAmount, reason);
+  return wholeAmount;
+}
+
+function calculateClearCoinReward(totalRegions, comboValue) {
+  if (!totalRegions) return 0;
+  return (totalRegions * COIN_REWARDS.clearRegion)
+    + (Math.max(0, totalRegions - 1) * COIN_REWARDS.multiClearBonus)
+    + (Math.max(0, comboValue - 1) * COIN_REWARDS.comboStep);
+}
+
+function clearRewardLabel(totalRegions, comboValue) {
+  if (totalRegions >= 2 && comboValue >= 2) return `${totalRegions}-clear combo`;
+  if (totalRegions >= 2) return `${totalRegions}-clear move`;
+  if (comboValue >= 2) return 'Combo bonus';
+  return 'Clear reward';
+}
+
+function calculateEndRunCoinReward(finalScore) {
+  return COIN_REWARDS.endRunBase + Math.floor(finalScore / 50) * COIN_REWARDS.endRunPer50Score;
+}
+
+function showCoinToast(amount, reason) {
+  const anchor = document.querySelector('.coins-stat') || document.getElementById('score-wrap');
+  if (!anchor) return;
+
+  const toast = document.createElement('div');
+  toast.className = 'coin-toast';
+  toast.innerHTML = `<strong>🪙 +${amount}</strong><span>${reason}</span>`;
+
+  const rect = anchor.getBoundingClientRect();
+  const maxLeft = Math.max(12, window.innerWidth - 232);
+  coinToastOffset = (coinToastOffset + 1) % 3;
+  toast.style.left = `${Math.min(maxLeft, Math.max(12, rect.left - 20 + coinToastOffset * 10))}px`;
+  toast.style.top = `${Math.max(12, rect.bottom + 8 + coinToastOffset * 6)}px`;
+
+  document.body.appendChild(toast);
+  toast.addEventListener('animationend', () => toast.remove(), { once: true });
+}
+
+function awardMissionCoins(amount, missionName = 'Mission complete') {
+  return awardCoins(amount, missionName);
 }
 
 // ── Piece helpers ──────────────────────────────────────────
@@ -940,6 +1015,9 @@ function doClears() {
   pts += combo * 5;
   score += pts;
 
+  const clearCoins = calculateClearCoinReward(total, combo);
+  awardCoins(clearCoins, clearRewardLabel(total, combo));
+
   for (const key of cleared) {
     const [r, c] = key.split(',').map(Number);
     board[r][c] = 0;
@@ -1030,10 +1108,14 @@ function isGameOver() {
 function triggerGameOver() {
   gameOver = true;
 
-  if (score > bestScore) {
+  const isNewBest = score > bestScore;
+  if (isNewBest) {
     bestScore = score;
     localStorage.setItem('bst-best', bestScore);
   }
+
+  awardCoins(calculateEndRunCoinReward(score), 'Run complete');
+  if (isNewBest) awardCoins(COIN_REWARDS.personalBestBonus, 'New best');
 
   const todayKey = new Date().toISOString().slice(0, 10);
   const td = JSON.parse(localStorage.getItem('bst-today') || '{"d":"","s":0}');
@@ -1082,6 +1164,8 @@ function showChooseCarefullyMsg() {
 
 // ── New round / restart ────────────────────────────────────
 function newRound() {
+  awardCoins(COIN_REWARDS.roundCompletion, 'Rack complete');
+
   used    = Array(rackSize).fill(false);
   pieces  = smartPieces();
   if (colorSetting === 'random') applyColor('random');
@@ -1099,6 +1183,7 @@ function startNewGame() {
   score    = 0;
   combo    = 0;
   gameOver = false;
+  coinToastOffset = 0;
   used     = Array(rackSize).fill(false);
   pieces   = smartPieces();
 
@@ -1122,6 +1207,7 @@ function updateScoreUI() {
   el.textContent = score;
   document.getElementById('today-val').textContent  = Math.max(todayScore, score);
   document.getElementById('best-val').textContent   = Math.max(bestScore, score);
+  updateCoinUI();
 
   // Bump animation when score changes
   if (String(score) !== prev) {
@@ -1519,6 +1605,7 @@ function init() {
   todayScore = (td.d === todayKey) ? td.s : 0;
 
   loadProgressionState();
+  updateCoinUI();
   loadSettings();
   applyDarkMode(darkMode);
   applyColor(colorSetting);
