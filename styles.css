@@ -108,10 +108,27 @@ a.icon-btn { text-decoration: none; }
 #score-sub {
   display: flex;
   justify-content: center;
-  gap: 14px;
+  gap: 10px 14px;
   font-size: 12px;
   color: var(--text-2);
   margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.coins-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-card));
+  color: color-mix(in srgb, var(--accent-dk) 70%, var(--text));
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  font-weight: 700;
+}
+
+[data-theme="dark"] .coins-stat {
+  color: color-mix(in srgb, var(--accent-hi) 72%, var(--text));
 }
 
 /* ===== Main ===== */
@@ -271,6 +288,39 @@ a.icon-btn { text-decoration: none; }
   z-index: 3000;
   animation: pointsFloat 0.75s ease-out forwards;
   white-space: nowrap;
+}
+
+/* ===== Coin reward toast ===== */
+@keyframes coinToastIn {
+  0%   { transform: translateY(8px) scale(0.92); opacity: 0; }
+  18%  { transform: translateY(0) scale(1); opacity: 1; }
+  82%  { transform: translateY(-18px) scale(1); opacity: 1; }
+  100% { transform: translateY(-30px) scale(0.96); opacity: 0; }
+}
+.coin-toast {
+  position: fixed;
+  min-width: 140px;
+  max-width: min(220px, calc(100vw - 24px));
+  padding: 9px 12px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--accent) 20%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  box-shadow: 0 10px 28px rgba(0,0,0,0.16);
+  color: var(--text);
+  pointer-events: none;
+  z-index: 3200;
+  animation: coinToastIn 1.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.coin-toast strong {
+  display: block;
+  font-size: 16px;
+  line-height: 1.05;
+}
+.coin-toast span {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-2);
 }
 
 /* ===== Overlay transitions ===== */
