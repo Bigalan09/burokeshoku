@@ -514,8 +514,22 @@ a.icon-btn { text-decoration: none; }
   transition: opacity 0.1s;
 }
 .pill-btn:active { opacity: 0.75; }
+.pill-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 .pill-btn.wide   { width: 100%; padding: 12px; font-size: 15px; margin-top: 8px; }
 .pill-btn.danger { background: #ff3b30; }
+.pill-btn--secondary {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg));
+  color: color-mix(in srgb, var(--accent-dk) 78%, var(--text));
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+}
+.pill-btn--ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
 
 /* ===== Overlays ===== */
 .overlay {
@@ -543,6 +557,73 @@ a.icon-btn { text-decoration: none; }
 .ov-card--missions {
   max-width: 380px;
   text-align: left;
+}
+
+.overlay--start {
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 45%),
+    rgba(13, 14, 18, 0.52);
+}
+
+.ov-card--start {
+  max-width: 360px;
+  padding: 30px 24px 22px;
+  text-align: left;
+}
+
+.ov-card--start h1 {
+  font-size: clamp(34px, 10vw, 44px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin-bottom: 10px;
+}
+
+.start-kicker {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--accent-dk) 70%, var(--text));
+}
+
+.start-intro {
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.start-notes {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.start-notes p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 12px 13px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
+}
+
+.start-notes strong {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.start-notes span {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-2);
 }
 
 .ov-card h2 {
