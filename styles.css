@@ -560,70 +560,47 @@ a.icon-btn { text-decoration: none; }
 }
 
 .overlay--start {
-  background:
-    radial-gradient(circle at top, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 45%),
-    rgba(13, 14, 18, 0.52);
+  background: color-mix(in srgb, var(--text) 28%, transparent);
 }
 
 .ov-card--start {
-  max-width: 360px;
-  padding: 30px 24px 22px;
-  text-align: left;
+  max-width: 320px;
+  padding: 28px 24px 20px;
+  text-align: center;
 }
 
 .ov-card--start h1 {
-  font-size: clamp(34px, 10vw, 44px);
-  line-height: 0.95;
+  font-size: clamp(34px, 10vw, 42px);
+  line-height: 0.98;
   letter-spacing: -0.04em;
-  margin-bottom: 10px;
-}
-
-.start-kicker {
-  margin-bottom: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--accent-dk) 70%, var(--text));
+  margin-bottom: 8px;
 }
 
 .start-intro {
-  font-size: 15px;
-  line-height: 1.5;
-  margin-bottom: 14px;
+  max-width: 18rem;
+  margin: 0 auto 16px;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .start-actions {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
-.start-notes {
-  display: grid;
-  gap: 10px;
-  margin-top: 16px;
+.start-actions .wide {
+  margin-top: 0;
 }
 
-.start-notes p {
-  display: grid;
-  gap: 3px;
-  margin: 0;
-  padding: 12px 13px;
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
-  border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
-}
-
-.start-notes strong {
-  font-size: 13px;
-  color: var(--text);
-}
-
-.start-notes span {
-  font-size: 12px;
-  line-height: 1.45;
+.start-link-btn {
+  margin: 14px auto 0;
+  border: none;
+  background: transparent;
   color: var(--text-2);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 .ov-card h2 {

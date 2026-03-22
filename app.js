@@ -1112,15 +1112,19 @@ function restoreSavedGame() {
 
 function updateStartOverlayState() {
   const continueBtn = document.getElementById('btn-continue');
+  const newGameBtn = document.getElementById('btn-start-new');
   const intro = document.getElementById('start-intro');
-  if (!continueBtn || !intro) return;
+  if (!continueBtn || !newGameBtn || !intro) return;
 
   const hasSavedGame = !!getSavedGameSession();
+  continueBtn.hidden = !hasSavedGame;
   continueBtn.disabled = !hasSavedGame;
-  continueBtn.textContent = hasSavedGame ? 'Continue game' : 'No saved game yet';
+  continueBtn.textContent = 'Continue';
+  newGameBtn.textContent = hasSavedGame ? 'New game' : 'Start game';
+  newGameBtn.classList.toggle('pill-btn--secondary', hasSavedGame);
   intro.textContent = hasSavedGame
-    ? 'Pick up where you left off, start fresh or adjust the game before the first move.'
-    : 'Start a fresh round, explore settings and ease into play with fewer reward interruptions.';
+    ? 'Continue your saved run or start again.'
+    : 'Start a fresh run.';
 }
 
 function openStartOverlay() {
