@@ -20,9 +20,9 @@
       <div class="page-scroll page-scroll--dashboard">
         <header class="page-top page-top--dashboard">
           <div>
-            <p class="page-kicker">Calm arcade puzzle</p>
+            <p class="page-kicker">9×9 block puzzle</p>
             <h1>Burohame</h1>
-            <p class="page-intro" id="dashboard-intro">Start a fresh run.</p>
+            <p class="page-intro" id="dashboard-intro">boo-roh-hah-meh</p>
           </div>
           <a class="icon-btn" href="https://github.com/Bigalan09/Burohame" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
             <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -41,7 +41,10 @@
             <button class="pill-btn wide" id="btn-dashboard-continue">Continue run</button>
             <button class="pill-btn wide pill-btn--secondary" id="btn-dashboard-new">Start new run</button>
           </div>
-          <p class="dash-hero-note">Equipped finish: <strong id="dashboard-finish">Classic</strong></p>
+          <div class="dash-hero-meta" aria-label="Current dashboard status">
+            <p class="dash-hero-note">Equipped finish: <strong id="dashboard-finish">Classic</strong></p>
+            <span class="dash-hero-chip" id="dashboard-run-state">Ready for a fresh run</span>
+          </div>
         </section>
 
         <section class="dashboard-stats" aria-label="Dashboard statistics">
@@ -306,6 +309,11 @@
 
     <div id="ov-gameover" class="overlay" hidden>
       <div class="ov-card ov-card--summary">
+        <button class="summary-close-btn" id="btn-gameover-dashboard" type="button" aria-label="Back to dashboard">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M11.75 4.5L6 10l5.75 5.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
         <h2>Game Over</h2>
         <p class="summary-intro">Your run rewards are ready.</p>
         <div class="run-summary" aria-label="Run rewards summary">
@@ -357,6 +365,14 @@
           <path d="M7.5 7.25V6a2.5 2.5 0 1 1 5 0v1.25" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
         </svg>
         <span>Shop</span>
+      </button>
+      <button class="bottom-nav__item bottom-nav__item--play" id="btn-bottom-nav-play" type="button" aria-label="Start new run">
+        <span class="bottom-nav__play-disc" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M9 7.5v9l7-4.5-7-4.5Z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span id="bottom-nav-play-label">Play</span>
       </button>
       <button class="bottom-nav__item" data-nav-page="settings" type="button" aria-label="Settings">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">

@@ -197,6 +197,8 @@ const REDUCED_MOTION_QUERY = window.matchMedia('(prefers-reduced-motion: reduce)
 const DAILY_CHALLENGE_REWARD_BASE = 12;
 const DAILY_CHALLENGE_STREAK_STEP = 2;
 const DAILY_CHALLENGE_STREAK_BONUS_CAP = 10;
+const SHOP_PRICE_MULTIPLIER = 2;
+const COIN_REWARD_MULTIPLIER = 0.8;
 const DAILY_CHALLENGE_TARGET_MIN = 140;
 const DAILY_CHALLENGE_TARGET_RANGE = 51;
 const COIN_REWARDS = Object.freeze({
@@ -209,12 +211,22 @@ const COIN_REWARDS = Object.freeze({
   endRunPer50Score: 2,
   personalBestBonus: 18,
 });
+function scaleShopPrice(amount) {
+  if (!amount) return 0;
+  return Math.max(0, Math.round(amount * SHOP_PRICE_MULTIPLIER));
+}
+
+function scaleCoinReward(amount) {
+  if (!amount) return 0;
+  return Math.max(1, Math.round(amount * COIN_REWARD_MULTIPLIER));
+}
+
 const DAILY_MISSION_TEMPLATES = Object.freeze([
   {
     templateId: 'score-120',
     kind: 'score',
     goal: 120,
-    reward: 18,
+    reward: scaleCoinReward(18),
     title: 'Point collector',
     description: 'Score 120 points across today’s runs.',
   },
@@ -222,7 +234,7 @@ const DAILY_MISSION_TEMPLATES = Object.freeze([
     templateId: 'blocks-30',
     kind: 'blocks',
     goal: 30,
-    reward: 14,
+    reward: scaleCoinReward(14),
     title: 'Builder’s rhythm',
     description: 'Place 30 blocks today.',
   },
@@ -230,7 +242,7 @@ const DAILY_MISSION_TEMPLATES = Object.freeze([
     templateId: 'regions-8',
     kind: 'regions',
     goal: 8,
-    reward: 16,
+    reward: scaleCoinReward(16),
     title: 'Board cleaner',
     description: 'Clear 8 regions today.',
   },
@@ -238,7 +250,7 @@ const DAILY_MISSION_TEMPLATES = Object.freeze([
     templateId: 'racks-4',
     kind: 'racks',
     goal: 4,
-    reward: 12,
+    reward: scaleCoinReward(12),
     title: 'Rack runner',
     description: 'Finish 4 full racks today.',
   },
@@ -246,7 +258,7 @@ const DAILY_MISSION_TEMPLATES = Object.freeze([
     templateId: 'combo-4',
     kind: 'combo',
     goal: 4,
-    reward: 20,
+    reward: scaleCoinReward(20),
     title: 'Heat check',
     description: 'Reach a 4× combo in a run today.',
   },
@@ -254,7 +266,7 @@ const DAILY_MISSION_TEMPLATES = Object.freeze([
     templateId: 'runs-3',
     kind: 'runs',
     goal: 3,
-    reward: 10,
+    reward: scaleCoinReward(10),
     title: 'Keep going',
     description: 'Complete 3 runs today.',
   },
@@ -272,7 +284,7 @@ const COLORWAY_CATALOGUE = Object.freeze([
     id: 'blue',
     name: 'Blue Tide',
     description: 'Cool focus with a crisp electric edge.',
-    price: 35,
+    price: scaleShopPrice(35),
     icon: '🔵',
     swatches: ['#9fd3ff', '#007aff', '#005ec4'],
   },
@@ -280,7 +292,7 @@ const COLORWAY_CATALOGUE = Object.freeze([
     id: 'green',
     name: 'Green Grove',
     description: 'A calmer board feel with fresh contrast.',
-    price: 35,
+    price: scaleShopPrice(35),
     icon: '🟢',
     swatches: ['#a7efbc', '#34c759', '#248a3d'],
   },
@@ -288,7 +300,7 @@ const COLORWAY_CATALOGUE = Object.freeze([
     id: 'purple',
     name: 'Purple Pulse',
     description: 'A richer palette for streak-chasing sessions.',
-    price: 45,
+    price: scaleShopPrice(45),
     icon: '🟣',
     swatches: ['#d6aef2', '#af52de', '#8944ab'],
   },
@@ -296,7 +308,7 @@ const COLORWAY_CATALOGUE = Object.freeze([
     id: 'red',
     name: 'Red Rally',
     description: 'A bolder tone when you want a sharper board.',
-    price: 45,
+    price: scaleShopPrice(45),
     icon: '🔴',
     swatches: ['#ff9b94', '#ff3b30', '#d4264a'],
   },
@@ -304,7 +316,7 @@ const COLORWAY_CATALOGUE = Object.freeze([
     id: 'teal',
     name: 'Teal Drift',
     description: 'Bright sea-glass highlights with softer depth.',
-    price: 55,
+    price: scaleShopPrice(55),
     icon: '💎',
     swatches: ['#b8efff', '#5ac8fa', '#3aabd6'],
   },
@@ -312,7 +324,7 @@ const COLORWAY_CATALOGUE = Object.freeze([
     id: 'pink',
     name: 'Pink Pop',
     description: 'Playful contrast without losing clarity.',
-    price: 55,
+    price: scaleShopPrice(55),
     icon: '💗',
     swatches: ['#ffb1c3', '#ff2d55', '#d4264a'],
   },
@@ -320,7 +332,7 @@ const COLORWAY_CATALOGUE = Object.freeze([
     id: 'random',
     name: 'Shuffle Glow',
     description: 'Swap to a fresh unlocked colour every rack.',
-    price: 90,
+    price: scaleShopPrice(90),
     icon: '🎲',
     swatches: ['#ffd08a', '#5ac8fa', '#af52de'],
   },
@@ -343,37 +355,37 @@ const COSMETIC_CATALOGUE = Object.freeze({
       id: 'satin',
       name: 'Satin',
       description: 'Soft rounded edges with a calm sheen.',
-      price: 60,
+      price: scaleShopPrice(60),
     },
     {
       id: 'carbon',
       name: 'Carbon',
       description: 'Sharper edges with a grounded board-game feel.',
-      price: 110,
+      price: scaleShopPrice(110),
     },
     {
       id: 'prism',
       name: 'Prism',
       description: 'A brighter faceted shine for high-score chasers.',
-      price: 170,
+      price: scaleShopPrice(170),
     },
     {
       id: 'velvet',
       name: 'Velvet',
       description: 'A softer matte finish with rounded edges.',
-      price: 140,
+      price: scaleShopPrice(140),
     },
     {
       id: 'frost',
       name: 'Frost',
       description: 'Cool highlights and lighter faces for clean boards.',
-      price: 190,
+      price: scaleShopPrice(190),
     },
     {
       id: 'ember',
       name: 'Ember',
       description: 'Deeper shadows and hotter highlights for tense runs.',
-      price: 230,
+      price: scaleShopPrice(230),
     },
   ],
 });
@@ -769,6 +781,7 @@ function renderGameOverSummary() {
   const dailyStatus = document.getElementById('go-daily-status');
   const dailyCopy = document.getElementById('go-daily-copy');
   const nextRunButton = document.getElementById('btn-new');
+  const dashboardButton = document.getElementById('btn-gameover-dashboard');
 
   document.getElementById('go-score').textContent = String(summary.finalScore);
   document.getElementById('go-best').textContent = String(bestScore);
@@ -782,6 +795,9 @@ function renderGameOverSummary() {
   }
   if (nextRunButton) {
     nextRunButton.textContent = isDailyChallengeSession() ? 'Play another run' : 'Start next run';
+  }
+  if (dashboardButton) {
+    dashboardButton.setAttribute('aria-label', isDailyChallengeSession() ? 'Back to dashboard from daily challenge summary' : 'Back to dashboard');
   }
 
   if (dailySummary && dailyStatus && dailyCopy) {
@@ -1025,9 +1041,10 @@ function equipBlockSkin(skinId) {
 
 function calculateClearCoinReward(totalRegions, comboValue) {
   if (!totalRegions) return 0;
-  return (totalRegions * COIN_REWARDS.clearRegion)
+  const baseReward = (totalRegions * COIN_REWARDS.clearRegion)
     + (Math.max(0, totalRegions - 1) * COIN_REWARDS.multiClearBonus)
     + (Math.max(0, comboValue - 1) * COIN_REWARDS.comboStep);
+  return scaleCoinReward(baseReward);
 }
 
 function clearRewardLabel(totalRegions, comboValue) {
@@ -1038,13 +1055,14 @@ function clearRewardLabel(totalRegions, comboValue) {
 }
 
 function calculateEndRunCoinReward(finalScore) {
-  return COIN_REWARDS.endRunBase + Math.floor(finalScore / 50) * COIN_REWARDS.endRunPer50Score;
+  const baseReward = COIN_REWARDS.endRunBase + Math.floor(finalScore / 50) * COIN_REWARDS.endRunPer50Score;
+  return scaleCoinReward(baseReward);
 }
 
 function getRoundMilestoneReward(roundsCompleted) {
   if (!roundsCompleted) return 0;
   return roundsCompleted % COIN_REWARDS.roundMilestoneEvery === 0
-    ? COIN_REWARDS.roundMilestoneReward
+    ? scaleCoinReward(COIN_REWARDS.roundMilestoneReward)
     : 0;
 }
 
@@ -1151,10 +1169,11 @@ function getDisplayedStreakCount() {
 }
 
 function getDailyChallengeRewardAmount(streakCount) {
-  return DAILY_CHALLENGE_REWARD_BASE + Math.min(
+  const baseReward = DAILY_CHALLENGE_REWARD_BASE + Math.min(
     DAILY_CHALLENGE_STREAK_BONUS_CAP,
     Math.max(0, streakCount - 1) * DAILY_CHALLENGE_STREAK_STEP
   );
+  return scaleCoinReward(baseReward);
 }
 
 function getDailyChallengeStatus(challenge = ensureDailyChallengeForToday()) {
@@ -1366,6 +1385,7 @@ function renderCosmeticsCollection() {
     const equipped = colorSetting === colorway.id;
     const canAfford = coinBalance >= colorway.price;
     const status = equipped ? 'Equipped' : owned ? 'Unlocked' : 'Locked';
+    const stateClass = equipped ? 'is-equipped' : owned ? 'is-unlocked' : 'is-locked';
     const costLabel = colorway.price ? `🪙 ${colorway.price}` : 'Free';
     const card = document.createElement('article');
     card.className = 'cosmetic-card cosmetic-card--colorway';
@@ -1378,11 +1398,13 @@ function renderCosmeticsCollection() {
     card.innerHTML = `
       <div class="cosmetic-card__preview" aria-hidden="true">${swatches}</div>
       <div class="cosmetic-card__body">
-        <h3>${label}</h3>
+        <div class="cosmetic-card__head">
+          <h3>${label}</h3>
+          <span class="cosmetic-card__state ${stateClass}">${status}</span>
+        </div>
         <p>${colorway.description}</p>
         <div class="cosmetic-card__footer">
           <div class="cosmetic-card__meta">
-            <strong>${status}</strong>
             <span>${costLabel}</span>
           </div>
           ${getShopActionMarkup({ owned, equipped, canAfford, price: colorway.price, itemId: colorway.id, collection: 'colorway' })}
@@ -1404,6 +1426,7 @@ function renderCosmeticsCollection() {
     if (!owned) card.classList.add('cosmetic-card--locked');
 
     const status = equipped ? 'Equipped' : owned ? 'Unlocked' : 'Locked';
+    const stateClass = equipped ? 'is-equipped' : owned ? 'is-unlocked' : 'is-locked';
     const costLabel = skin.price ? `🪙 ${skin.price}` : 'Free';
 
     card.innerHTML = `
@@ -1413,11 +1436,13 @@ function renderCosmeticsCollection() {
         <span class="cosmetic-card__tile"></span>
       </div>
       <div class="cosmetic-card__body">
-        <h3>${skin.name}</h3>
+        <div class="cosmetic-card__head">
+          <h3>${skin.name}</h3>
+          <span class="cosmetic-card__state ${stateClass}">${status}</span>
+        </div>
         <p>${skin.description}</p>
         <div class="cosmetic-card__footer">
           <div class="cosmetic-card__meta">
-            <strong>${status}</strong>
             <span>${costLabel}</span>
           </div>
           ${getShopActionMarkup({ owned, equipped, canAfford, price: skin.price, itemId: skin.id, collection: 'finish' })}
@@ -1919,6 +1944,7 @@ function renderDashboard() {
   const dailyButton = document.getElementById('btn-dashboard-daily');
   const dailyInfoButton = document.getElementById('btn-dashboard-daily-info');
   const dailyStreakPill = document.getElementById('daily-streak-pill');
+  const runState = document.getElementById('dashboard-run-state');
   const hasSavedGame = !!getSavedGameSession();
   const savedGame = getSavedGameSession();
   const missionCounts = getDailyMissionCounts();
@@ -1933,12 +1959,20 @@ function renderDashboard() {
   }
   if (newGameBtn) {
     newGameBtn.textContent = hasSavedGame ? 'Start fresh run' : 'Start new run';
+    newGameBtn.classList.toggle('pill-btn--secondary', hasSavedGame);
+  }
+  if (runState) {
+    runState.textContent = savedGame?.sessionType === 'daily'
+      ? 'Daily challenge ready to resume'
+      : hasSavedGame
+        ? 'Saved run ready to continue'
+        : 'Ready for a fresh run';
   }
   if (intro) {
     if (savedGame?.sessionType === 'daily') {
       intro.textContent = 'Your daily challenge is still waiting.';
     } else {
-      intro.textContent = hasSavedGame ? 'Pick up where you left off.' : 'One tap to start playing.';
+      intro.textContent = hasSavedGame ? 'Pick up where you left off.' : 'boo-roh-hah-meh';
     }
   }
   if (missionCopy) {
@@ -2002,12 +2036,32 @@ function populateSettingsPage() {
   updateCosmeticLabel();
 }
 
+function updatePrimaryPlayButton() {
+  const playButton = document.getElementById('btn-bottom-nav-play');
+  const playLabel = document.getElementById('bottom-nav-play-label');
+  if (!playButton || !playLabel) return;
+
+  const savedGame = getSavedGameSession();
+  const isDaily = savedGame?.sessionType === 'daily';
+  const label = isDaily ? 'Resume daily' : savedGame ? 'Resume' : 'Play';
+  const ariaLabel = isDaily
+    ? 'Resume daily challenge'
+    : savedGame
+      ? 'Resume saved run'
+      : 'Start new run';
+
+  playLabel.textContent = label;
+  playButton.setAttribute('aria-label', ariaLabel);
+}
+
 function updateBottomNav() {
-  document.querySelectorAll('.bottom-nav__item').forEach(button => {
+  document.querySelectorAll('.bottom-nav__item[data-nav-page]').forEach(button => {
     const isActive = button.dataset.navPage === currentPage;
     button.classList.toggle('is-active', isActive);
     button.setAttribute('aria-current', isActive ? 'page' : 'false');
   });
+
+  updatePrimaryPlayButton();
 }
 
 function navigateTo(page) {
@@ -2530,7 +2584,7 @@ function triggerGameOver() {
   }
 
   awardCoins(calculateEndRunCoinReward(score), 'Run complete');
-  if (isNewBest) awardCoins(COIN_REWARDS.personalBestBonus, 'New best');
+  if (isNewBest) awardCoins(scaleCoinReward(COIN_REWARDS.personalBestBonus), 'New best');
   ensureRunSummary().stats.personalBest = isNewBest;
 
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -3056,10 +3110,19 @@ document.getElementById('btn-game-back').addEventListener('click', () => {
 document.getElementById('btn-settings-shop').addEventListener('click', () => {
   navigateTo('shop');
 });
-document.querySelectorAll('.bottom-nav__item').forEach(button => {
+document.querySelectorAll('.bottom-nav__item[data-nav-page]').forEach(button => {
   button.addEventListener('click', () => {
     navigateTo(button.dataset.navPage);
   });
+});
+
+document.getElementById('btn-bottom-nav-play').addEventListener('click', () => {
+  if (getSavedGameSession()) {
+    if (!restoreSavedGame()) return;
+  } else {
+    startNewGame();
+  }
+  navigateTo('game');
 });
 
 document.getElementById('btn-missions-close').addEventListener('click', () => {
@@ -3150,6 +3213,12 @@ document.getElementById('btn-restart').addEventListener('click', startNewGame);
 document.getElementById('btn-new').addEventListener('click', () => {
   startNewGame();
   navigateTo('game');
+});
+
+document.getElementById('btn-gameover-dashboard').addEventListener('click', () => {
+  hideOverlay('ov-gameover');
+  navigateTo('dashboard');
+  renderDashboard();
 });
 
 document.addEventListener('visibilitychange', () => {
