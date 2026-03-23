@@ -1972,7 +1972,7 @@ function renderDashboard() {
     if (savedGame?.sessionType === 'daily') {
       intro.textContent = 'Your daily challenge is still waiting.';
     } else {
-      intro.textContent = hasSavedGame ? 'Pick up where you left off.' : 'One tap to start playing.';
+      intro.textContent = hasSavedGame ? 'Pick up where you left off.' : 'boo-roh-hah-meh';
     }
   }
   if (missionCopy) {
