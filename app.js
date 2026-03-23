@@ -2037,11 +2037,34 @@ function populateSettingsPage() {
 }
 
 function updateBottomNav() {
-  document.querySelectorAll('.bottom-nav__item').forEach(button => {
+  document.querySelectorAll('.bottom-nav__item[data-nav-page]').forEach(button => {
     const isActive = button.dataset.navPage === currentPage;
     button.classList.toggle('is-active', isActive);
     button.setAttribute('aria-current', isActive ? 'page' : 'false');
   });
+
+  const playButton = document.getElementById('bottom-nav-play');
+  const playLabel = document.getElementById('bottom-nav-play-label');
+  const playDetail = document.getElementById('bottom-nav-play-detail');
+  const savedGame = getSavedGameSession();
+  const isResumable = !!savedGame;
+
+  if (!playButton || !playLabel || !playDetail) return;
+
+  playLabel.textContent = isResumable ? 'Resume' : 'Play';
+  playDetail.textContent = savedGame?.sessionType === 'daily'
+    ? 'Daily challenge'
+    : isResumable
+      ? 'Saved run'
+      : 'New run';
+  playButton.setAttribute(
+    'aria-label',
+    savedGame?.sessionType === 'daily'
+      ? 'Resume daily challenge'
+      : isResumable
+        ? 'Resume saved run'
+        : 'Start new run'
+  );
 }
 
 function navigateTo(page) {
@@ -3090,10 +3113,14 @@ document.getElementById('btn-game-back').addEventListener('click', () => {
 document.getElementById('btn-settings-shop').addEventListener('click', () => {
   navigateTo('shop');
 });
-document.querySelectorAll('.bottom-nav__item').forEach(button => {
+document.querySelectorAll('.bottom-nav__item[data-nav-page]').forEach(button => {
   button.addEventListener('click', () => {
     navigateTo(button.dataset.navPage);
   });
+});
+document.getElementById('bottom-nav-play').addEventListener('click', () => {
+  if (!restoreSavedGame()) startNewGame();
+  navigateTo('game');
 });
 
 document.getElementById('btn-missions-close').addEventListener('click', () => {
