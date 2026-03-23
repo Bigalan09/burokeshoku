@@ -146,6 +146,53 @@
       </div>
     </section>
 
+    <section class="page page--goals" data-page="goals" aria-label="Goals">
+      <div class="page-scroll">
+        <header class="page-top">
+          <div>
+            <p class="page-kicker">Progress</p>
+            <h2>Goals</h2>
+            <p class="page-intro">Daily missions reset every day. Quest chains unfold across the week and pay out bigger rewards when the full route is complete.</p>
+          </div>
+          <button class="icon-btn" id="btn-goals-back" aria-label="Back to dashboard" type="button">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M11.75 4.5L6 10l5.75 5.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="page-panel page-panel--goals">
+          <div class="missions-head">
+            <div>
+              <h2>Goals board</h2>
+              <p id="missions-subtitle">Fresh goals are on the way.</p>
+            </div>
+            <span class="missions-count" id="missions-count">0/0 completed</span>
+          </div>
+          <section class="missions-section" aria-labelledby="quest-list-title">
+            <div class="missions-head missions-head--nested">
+              <div>
+                <h3 id="quest-list-title">Quest chains</h3>
+                <p>Ordered objectives that unlock one step at a time across the week.</p>
+              </div>
+              <span class="missions-count" id="quest-count">0/0 chains complete</span>
+            </div>
+            <div id="quest-list" class="missions-list" aria-live="polite"></div>
+          </section>
+          <section class="missions-section" aria-labelledby="daily-missions-title">
+            <div class="missions-head missions-head--nested">
+              <div>
+                <h3 id="daily-missions-title">Daily missions</h3>
+                <p>One-step goals that refresh every day.</p>
+              </div>
+            </div>
+            <div id="missions-list" class="missions-list" aria-live="polite"></div>
+          </section>
+          <button class="pill-btn wide" id="btn-missions-close" type="button">Back to dashboard</button>
+        </div>
+      </div>
+    </section>
+
     <section class="page page--game" data-page="game" aria-label="Game">
       <header id="hdr">
         <button class="icon-btn" id="btn-game-back" aria-label="Back to dashboard" type="button">
@@ -347,38 +394,6 @@
         </label>
         <button class="pill-btn wide" id="btn-quick-settings-save" type="button">Apply</button>
         <button class="pill-btn wide pill-btn--secondary" id="btn-quick-settings-close" type="button">Back to game</button>
-      </div>
-    </div>
-
-    <div id="ov-missions" class="overlay" hidden>
-      <div class="ov-card ov-card--missions">
-        <div class="missions-head">
-          <div>
-            <h2>Goals board</h2>
-            <p id="missions-subtitle">Fresh goals are on the way.</p>
-          </div>
-          <span class="missions-count" id="missions-count">0/0 completed</span>
-        </div>
-        <section class="missions-section" aria-labelledby="quest-list-title">
-          <div class="missions-head missions-head--nested">
-            <div>
-              <h3 id="quest-list-title">Quest chains</h3>
-              <p>Ordered objectives that unlock one step at a time across the week.</p>
-            </div>
-            <span class="missions-count" id="quest-count">0/0 chains complete</span>
-          </div>
-          <div id="quest-list" class="missions-list" aria-live="polite"></div>
-        </section>
-        <section class="missions-section" aria-labelledby="daily-missions-title">
-          <div class="missions-head missions-head--nested">
-            <div>
-              <h3 id="daily-missions-title">Daily missions</h3>
-              <p>One-step goals that refresh every day.</p>
-            </div>
-          </div>
-        <div id="missions-list" class="missions-list" aria-live="polite"></div>
-        </section>
-        <button class="pill-btn wide" id="btn-missions-close" type="button">Back to dashboard</button>
       </div>
     </div>
 
